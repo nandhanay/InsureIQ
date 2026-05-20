@@ -1,0 +1,46 @@
+:root {
+  /* ── Backgrounds ── */
+  --bg: #000000;
+  --bg-elevated: #0A0A0A;
+
+  /* ── Surfaces ── */
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-hover: rgba(255, 255, 255, 0.10);
+  --surface-strong: rgba(255, 255, 255, 0.10);
+  --surface-active: rgba(255, 255, 255, 0.14);
+
+  /* ── Borders ── */
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.20);
+  --border-focus: rgba(255, 255, 255, 0.40);
+
+  /* ── Text ── */
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.50);
+  --text-tertiary: rgba(255, 255, 255, 0.30);
+
+  /* ── Accent ── */
+  --accent: #FFFFFF;
+  --accent-muted: rgba(255, 255, 255, 0.80);
+
+  /* ── Semantic ── */
+  --risk-low: #34D399;
+  --risk-moderate: #FBBF24;
+  --risk-high: #F87171;
+  --info: #60A5FA;
+
+  /* ── Radii ── */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* ── Spacing ── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+}

@@ -5,6 +5,7 @@ import PrimaryButton from '../../../components/ui/PrimaryButton'
 import GhostButton from '../../../components/ui/GhostButton'
 import ConfidenceIndicator from '../../../components/ui/ConfidenceIndicator'
 import { mockExtractedValues } from '../../../data/mockRecommendations'
+import { useExtractDoc } from '../../../hooks/useExtractDoc'
 
 interface Props {
   formData: any
@@ -17,28 +18,39 @@ export default function DocumentUpload({ formData, updateField }: Props) {
   const [extracting, setExtracting] = useState(false)
   const [extracted, setExtracted] = useState(false)
   const [manualMode, setManualMode] = useState(false)
+  const [extractedData, setExtractedData] = useState<any>(null)
+
+  const extractDoc = useExtractDoc()
+
+  const handleUpload = (file: File) => {
+    setUploadedFile(file.name)
+    setExtracting(true)
+    extractDoc.mutate(file, {
+      onSuccess: (data) => {
+        setExtracting(false)
+        setExtracted(true)
+        setExtractedData(data)
+        updateField('documentsUploaded', true)
+      },
+      onError: (err) => {
+        setExtracting(false)
+        alert('Failed to extract document details.')
+      }
+    })
+  }
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
     const file = e.dataTransfer.files[0]
-    if (file) simulateUpload(file.name)
+    if (file) handleUpload(file)
   }, [])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) simulateUpload(file.name)
+    if (file) handleUpload(file)
   }
 
-  const simulateUpload = (fileName: string) => {
-    setUploadedFile(fileName)
-    setExtracting(true)
-    setTimeout(() => {
-      setExtracting(false)
-      setExtracted(true)
-      updateField('documentsUploaded', true)
-    }, 2000)
-  }
 
   const statusColor = {
     normal: 'text-emerald-400',
@@ -47,7 +59,7 @@ export default function DocumentUpload({ formData, updateField }: Props) {
     low: 'text-amber-400',
   }
 
-  const extractedEntries = Object.entries(mockExtractedValues) as [string, { value: string; confidence: number; status: 'normal' | 'elevated' | 'high' | 'low' }][]
+  const extractedEntries = Object.entries(extractedData || mockExtractedValues) as [string, { value: string; confidence: number; status: 'normal' | 'elevated' | 'high' | 'low' }][]
 
   const labelMap: Record<string, string> = {
     hba1c: 'HbA1c', glucose: 'Glucose', bloodPressure: 'Blood Pressure',

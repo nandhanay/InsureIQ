@@ -4,7 +4,10 @@ import { Search, SlidersHorizontal } from 'lucide-react'
 import GlassCard from '../../components/ui/GlassCard'
 import Badge from '../../components/ui/Badge'
 import WatchlistButton from '../../components/ui/WatchlistButton'
-import { mockPlans } from '../../data/mockPlans'
+import { usePlans } from '../../hooks/usePlans'
+import { useWatchlist } from '../../hooks/useWatchlist'
+import { useToggleWatchlist } from '../../hooks/useToggleWatchlist'
+import { useWatchlistStore } from '../../stores/watchlistStore'
 
 export default function PlanList() {
   const navigate = useNavigate()
@@ -13,17 +16,24 @@ export default function PlanList() {
   const [premiumRange, setPremiumRange] = useState(25000)
   const [csrMin, setCsrMin] = useState(0)
 
+  const { data: plansData = [], isLoading, error } = usePlans()
+  // Ensure watchlist query is active so watchlistPlanIds gets populated in Zustand
+  useWatchlist()
+  const watchlistPlanIds = useWatchlistStore((state) => state.watchlistPlanIds)
+  const toggleWatchlist = useToggleWatchlist()
+
   const filtered = useMemo(() => {
-    return mockPlans.filter(p => {
+    return plansData.filter((p: any) => {
       if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.insurer.toLowerCase().includes(search.toLowerCase())) return false
       if (typeFilter && p.planType !== typeFilter) return false
       if (p.premiumMin > premiumRange) return false
       if (p.csr < csrMin) return false
       return true
     })
-  }, [search, typeFilter, premiumRange, csrMin])
+  }, [search, typeFilter, premiumRange, csrMin, plansData])
 
-  const planTypes = [...new Set(mockPlans.map(p => p.planType))]
+  const planTypes = useMemo(() => [...new Set(plansData.map((p: any) => p.planType))] as string[], [plansData])
+
 
   return (
     <div className="min-h-screen p-6 lg:p-8">
@@ -91,48 +101,62 @@ export default function PlanList() {
           </GlassCard>
         </div>
 
-        {/* Plan Grid */}
+         {/* Plan Grid */}
         <div className="flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filtered.map((plan) => (
-              <GlassCard
-                key={plan.id}
-                className="p-5 cursor-pointer"
-                interactive
-                onClick={() => navigate(`/plans/${plan.id}`)}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-[14px] font-medium text-white">{plan.name}</h3>
-                    <p className="text-[12px] text-white/40">{plan.insurer}</p>
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white/[0.02] border border-white/[0.06] rounded-[var(--radius-lg)]">
+              <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-white/80 animate-spin mb-4" />
+              <p className="text-[14px] text-white/40">Loading Plan Catalog...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <p className="text-[14px] text-red-400">Failed to load plan catalog. Please check connection.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filtered.map((plan) => (
+                <GlassCard
+                  key={plan.id}
+                  className="p-5 cursor-pointer"
+                  interactive
+                  onClick={() => navigate(`/plans/${plan.id}`)}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-[14px] font-medium text-white">{plan.name}</h3>
+                      <p className="text-[12px] text-white/40">{plan.insurer}</p>
+                    </div>
+                    <WatchlistButton
+                      isWatchlisted={watchlistPlanIds.includes(plan.id)}
+                      onToggle={() => toggleWatchlist.mutate(plan.id)}
+                    />
                   </div>
-                  <WatchlistButton />
-                </div>
 
-                <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  <Badge>{plan.planType}</Badge>
-                  <Badge variant="info">CSR {plan.csr}%</Badge>
-                </div>
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <Badge>{plan.planType}</Badge>
+                    <Badge variant="info">CSR {plan.csr}%</Badge>
+                  </div>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-white/40">Premium</span>
-                    <span className="text-white/70">₹{plan.premiumMin.toLocaleString()} — ₹{plan.premiumMax.toLocaleString()}</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-[12px]">
+                      <span className="text-white/40">Premium</span>
+                      <span className="text-white/70">₹{plan.premiumMin.toLocaleString()} — ₹{plan.premiumMax.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-[12px]">
+                      <span className="text-white/40">Coverage</span>
+                      <span className="text-white/70">{plan.coverage}</span>
+                    </div>
+                    <div className="flex justify-between text-[12px]">
+                      <span className="text-white/40">Waiting Period</span>
+                      <span className="text-white/70">{plan.waitingPeriodDays} days</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-white/40">Coverage</span>
-                    <span className="text-white/70">{plan.coverage}</span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-white/40">Waiting Period</span>
-                    <span className="text-white/70">{plan.waitingPeriodDays} days</span>
-                  </div>
-                </div>
-              </GlassCard>
-            ))}
-          </div>
+                </GlassCard>
+              ))}
+            </div>
+          )}
 
-          {filtered.length === 0 && (
+          {!isLoading && !error && filtered.length === 0 && (
             <div className="text-center py-20">
               <p className="text-[14px] text-white/30">No plans match your filters</p>
             </div>

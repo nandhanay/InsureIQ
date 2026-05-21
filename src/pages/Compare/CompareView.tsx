@@ -4,12 +4,21 @@ import { useNavigate } from 'react-router-dom'
 import GlassCard from '../../components/ui/GlassCard'
 import CompareMatrix from '../../components/ui/CompareMatrix'
 import Badge from '../../components/ui/Badge'
-import { mockPlans } from '../../data/mockPlans'
-import { currentUser } from '../../data/mockUser'
+import { useQuery } from '@tanstack/react-query'
+import { usePlans } from '../../hooks/usePlans'
+import { compareAPI } from '../../services/api'
 
 export default function CompareView() {
   const navigate = useNavigate()
   const [selectedIds, setSelectedIds] = useState<string[]>(['plan-010', 'plan-001', 'plan-007'])
+
+  const { data: plans = [] } = usePlans()
+
+  const { data: compareData, isLoading: isCompareLoading } = useQuery({
+    queryKey: ['compare', selectedIds],
+    queryFn: () => compareAPI.comparePlans(selectedIds),
+    enabled: selectedIds.length >= 2,
+  })
 
   const togglePlan = (id: string) => {
     if (selectedIds.includes(id)) {
@@ -19,25 +28,9 @@ export default function CompareView() {
     }
   }
 
-  const comparePlans = selectedIds.map(id => {
-    const p = mockPlans.find(x => x.id === id)!
-    return {
-      id: p.id,
-      planName: p.name,
-      insurer: p.insurer,
-      suitabilityScore: 0,
-      premium: `₹${p.premiumMin.toLocaleString()} — ₹${p.premiumMax.toLocaleString()}`,
-      coverage: p.coverage,
-      waitingPeriod: `${p.waitingPeriodDays} days`,
-      roomRent: p.roomRent,
-      coPay: p.coPay,
-      csr: p.csr,
-      day1Conditions: p.day1Conditions,
-      exclusions: p.exclusions,
-      pros: p.pros,
-      cons: p.cons,
-    }
-  })
+  const comparePlans = compareData?.plans || []
+  const userConditions = compareData?.userConditions || []
+
 
   return (
     <div className="min-h-screen p-6 lg:p-8">
@@ -54,7 +47,7 @@ export default function CompareView() {
       {/* Plan selector */}
       <div className="mb-6">
         <div className="flex flex-wrap gap-2">
-          {mockPlans.map(p => (
+          {plans.map(p => (
             <button
               key={p.id}
               onClick={() => togglePlan(p.id)}
@@ -74,12 +67,19 @@ export default function CompareView() {
 
       {/* Compare Matrix */}
       {selectedIds.length >= 2 ? (
-        <GlassCard className="p-2 overflow-hidden">
-          <CompareMatrix
-            plans={comparePlans}
-            userConditions={currentUser.chronicConditions}
-          />
-        </GlassCard>
+        isCompareLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-white/[0.02] border border-white/[0.06] rounded-[var(--radius-lg)]">
+            <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-white/80 animate-spin mb-4" />
+            <p className="text-[14px] text-white/40">Calculating Dynamic Underwriting Suitability...</p>
+          </div>
+        ) : (
+          <GlassCard className="p-2 overflow-hidden">
+            <CompareMatrix
+              plans={comparePlans}
+              userConditions={userConditions}
+            />
+          </GlassCard>
+        )
       ) : (
         <div className="text-center py-20">
           <p className="text-[14px] text-white/30">Select at least 2 plans to compare</p>

@@ -7,6 +7,7 @@ import Demographics from './steps/Demographics'
 import FinancialProfile from './steps/FinancialProfile'
 import HealthProfile from './steps/HealthProfile'
 import DocumentUpload from './steps/DocumentUpload'
+import { useIntakeSubmit } from '../../hooks/useIntakeSubmit'
 
 const STEPS = ['Demographics', 'Financial', 'Health', 'Documents']
 
@@ -25,6 +26,8 @@ export default function IntakeWizard() {
     documentsUploaded: false,
   })
 
+  const intakeSubmit = useIntakeSubmit()
+
   const updateField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
@@ -33,7 +36,16 @@ export default function IntakeWizard() {
     if (step < STEPS.length - 1) {
       setStep(step + 1)
     } else {
-      navigate('/dashboard')
+      intakeSubmit.mutate(formData, {
+        onSuccess: () => {
+          navigate('/dashboard')
+        },
+        onError: (err) => {
+          console.error("Profile submission error:", err)
+          alert("Submission failed, proceeding with fallback data.")
+          navigate('/dashboard')
+        }
+      })
     }
   }
 
@@ -72,8 +84,8 @@ export default function IntakeWizard() {
           <GhostButton onClick={handleBack} disabled={step === 0}>
             Back
           </GhostButton>
-          <PrimaryButton onClick={handleNext}>
-            {step === STEPS.length - 1 ? 'Get Recommendations' : 'Continue'}
+          <PrimaryButton onClick={handleNext} disabled={intakeSubmit.isPending}>
+            {intakeSubmit.isPending ? 'Analyzing Profile...' : (step === STEPS.length - 1 ? 'Get Recommendations' : 'Continue')}
           </PrimaryButton>
         </div>
       </div>

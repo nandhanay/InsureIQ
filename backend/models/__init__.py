@@ -1,3 +1,4 @@
 from models.user import User
-
-__all__ = ["User"]
+from models.profile import UserProfile
+from models.plan import Plan
+from models.watchlist import Watchlist

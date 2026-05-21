@@ -5,14 +5,23 @@ import GlassCard from '../../components/ui/GlassCard'
 import Badge from '../../components/ui/Badge'
 import WatchlistChangeCard from '../../components/ui/WatchlistChangeCard'
 import GhostButton from '../../components/ui/GhostButton'
-import { mockPlans } from '../../data/mockPlans'
-import { mockWatchlistChanges } from '../../data/mockForecast'
-
-const watchlistedIds = ['plan-010', 'plan-001', 'plan-007']
+import { useWatchlist } from '../../hooks/useWatchlist'
 
 export default function WatchlistDashboard() {
   const navigate = useNavigate()
-  const plans = mockPlans.filter(p => watchlistedIds.includes(p.id))
+  const { data, isLoading, error } = useWatchlist()
+
+  const plans = data?.plans || []
+  const changes = data?.changes || []
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-white/80 animate-spin mb-4" />
+        <p className="text-[14px] text-white/40">Fetching Your Watchlist...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen p-6 lg:p-8">
@@ -23,6 +32,7 @@ export default function WatchlistDashboard() {
         </h1>
         <p className="text-[14px] text-white/40 mt-1">{plans.length} plans tracked</p>
       </div>
+
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Saved Plans */}
@@ -67,7 +77,7 @@ export default function WatchlistDashboard() {
             <Clock className="w-3.5 h-3.5" />
             Recent Changes
           </h3>
-          {mockWatchlistChanges.map((item, i) => (
+          {changes.map((item: any, i: number) => (
             <WatchlistChangeCard key={i} {...item} />
           ))}
 

@@ -4,23 +4,35 @@ import { ArrowLeft, RefreshCw, TrendingUp, AlertCircle } from 'lucide-react'
 import GlassCard from '../../components/ui/GlassCard'
 import PrimaryButton from '../../components/ui/PrimaryButton'
 import SelectField from '../../components/ui/SelectField'
+import { useSimulate } from '../../hooks/useSimulate'
 
 export default function Simulator() {
   const navigate = useNavigate()
   const [income, setIncome] = useState('10-20')
   const [newCondition, setNewCondition] = useState('')
   const [coverageIncrease, setCoverageIncrease] = useState(0)
-  const [simulated, setSimulated] = useState(false)
+  const [simulatedResults, setSimulatedResults] = useState<any[]>([])
+  const [simulationWarning, setSimulationWarning] = useState<string | null>(null)
+
+  const simulateMutation = useSimulate()
 
   const runSimulation = () => {
-    setSimulated(true)
+    simulateMutation.mutate({
+      income,
+      new_condition: newCondition,
+      coverage_increase: coverageIncrease,
+    }, {
+      onSuccess: (data) => {
+        setSimulatedResults(data.results)
+        setSimulationWarning(data.warning)
+      },
+      onError: (err) => {
+        console.error("Simulation failed:", err)
+        alert("Failed to compute simulation metrics.")
+      }
+    })
   }
 
-  const simulatedResults = [
-    { plan: 'Diabetes Safe', original: 13500, simulated: newCondition ? 16200 : 13500 + coverageIncrease * 8, change: newCondition ? '+20%' : `+${Math.round(coverageIncrease * 0.6)}%` },
-    { plan: 'Star Comprehensive', original: 10500, simulated: newCondition ? 13100 : 10500 + coverageIncrease * 6, change: newCondition ? '+25%' : `+${Math.round(coverageIncrease * 0.5)}%` },
-    { plan: 'Care Supreme', original: 11200, simulated: newCondition ? 14500 : 11200 + coverageIncrease * 7, change: newCondition ? '+29%' : `+${Math.round(coverageIncrease * 0.6)}%` },
-  ]
 
   return (
     <div className="min-h-screen p-6 lg:p-8 max-w-3xl mx-auto">
@@ -77,21 +89,21 @@ export default function Simulator() {
             <p className="text-[12px] text-white/40">+₹{coverageIncrease.toLocaleString()} additional coverage (in thousands)</p>
           </div>
 
-          <PrimaryButton onClick={runSimulation} fullWidth icon={<TrendingUp className="w-4 h-4" />}>
-            Run Simulation
+          <PrimaryButton onClick={runSimulation} fullWidth disabled={simulateMutation.isPending} icon={<TrendingUp className="w-4 h-4" />}>
+            {simulateMutation.isPending ? 'Simulating Dynamic Pricing...' : 'Run Simulation'}
           </PrimaryButton>
         </GlassCard>
 
         {/* Results */}
-        {simulated && (
+        {simulatedResults.length > 0 && (
           <GlassCard className="p-6 animate-slide-up">
             <h3 className="text-[14px] font-medium text-white/60 mb-4">Simulation Results</h3>
 
-            {newCondition && (
+            {simulationWarning && (
               <div className="flex items-start gap-2 px-4 py-3 rounded-[10px] bg-amber-400/[0.06] border border-amber-400/20 mb-4">
                 <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
                 <span className="text-[12px] text-amber-400">
-                  Adding a new condition significantly impacts premium and may affect underwriting eligibility.
+                  {simulationWarning}
                 </span>
               </div>
             )}
@@ -103,7 +115,7 @@ export default function Simulator() {
                   <div className="flex items-center gap-4">
                     <span className="text-[12px] text-white/30 line-through">₹{r.original.toLocaleString()}</span>
                     <span className="text-[14px] text-white font-medium">₹{r.simulated.toLocaleString()}</span>
-                    <span className="text-[12px] text-red-400">{r.change}</span>
+                    <span className={`text-[12px] ${r.change.startsWith('-') ? 'text-emerald-400' : 'text-red-400'}`}>{r.change}</span>
                   </div>
                 </div>
               ))}

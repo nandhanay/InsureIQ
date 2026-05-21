@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Line } from 'react-chartjs-2'
 import {
@@ -8,14 +8,25 @@ import {
 } from 'chart.js'
 import GlassCard from '../../components/ui/GlassCard'
 import GhostButton from '../../components/ui/GhostButton'
-import { mockForecasts } from '../../data/mockForecast'
+import { useForecast } from '../../hooks/useForecast'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
 export default function ForecastChart() {
   const navigate = useNavigate()
   const [yearRange, setYearRange] = useState<1 | 3 | 5>(5)
-  const [enabledPlans, setEnabledPlans] = useState<string[]>(mockForecasts.map(f => f.planId))
+  const [initialized, setInitialized] = useState(false)
+  const [enabledPlans, setEnabledPlans] = useState<string[]>([])
+
+  const { data, isLoading, error } = useForecast()
+  const forecasts = data?.forecasts || []
+
+  useEffect(() => {
+    if (forecasts.length > 0 && !initialized) {
+      setEnabledPlans(forecasts.map((f: any) => f.planId))
+      setInitialized(true)
+    }
+  }, [forecasts, initialized])
 
   const togglePlan = (id: string) => {
     setEnabledPlans(prev =>
@@ -25,11 +36,11 @@ export default function ForecastChart() {
 
   const chartData = useMemo(() => {
     const labels = Array.from({ length: yearRange + 1 }, (_, i) => `Year ${i}`)
-    const datasets = mockForecasts
-      .filter(f => enabledPlans.includes(f.planId))
-      .map(f => ({
+    const datasets = forecasts
+      .filter((f: any) => enabledPlans.includes(f.planId))
+      .map((f: any) => ({
         label: f.planName,
-        data: f.data.slice(0, yearRange + 1).map(d => d.premium),
+        data: f.data.slice(0, yearRange + 1).map((d: any) => d.premium),
         borderColor: f.color,
         backgroundColor: f.color + '15',
         tension: 0.3,
@@ -41,7 +52,8 @@ export default function ForecastChart() {
       }))
 
     return { labels, datasets }
-  }, [yearRange, enabledPlans])
+  }, [yearRange, enabledPlans, forecasts])
+
 
   const chartOptions = {
     responsive: true,
@@ -101,33 +113,46 @@ export default function ForecastChart() {
         ))}
       </div>
 
-      {/* Chart */}
-      <GlassCard className="p-6 mb-6">
-        <div className="h-[400px]">
-          <Line data={chartData} options={chartOptions} />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white/[0.02] border border-white/[0.06] rounded-[var(--radius-lg)]">
+          <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-white/80 animate-spin mb-4" />
+          <p className="text-[14px] text-white/40">Loading Premium Projections...</p>
         </div>
-      </GlassCard>
+      ) : error ? (
+        <div className="text-center py-20">
+          <p className="text-[14px] text-red-400">Failed to load forecast data. Please check connection.</p>
+        </div>
+      ) : (
+        <>
+          {/* Chart */}
+          <GlassCard className="p-6 mb-6">
+            <div className="h-[400px]">
+              <Line data={chartData} options={chartOptions} />
+            </div>
+          </GlassCard>
 
-      {/* Plan toggles */}
-      <GlassCard className="p-5">
-        <h3 className="text-[12px] text-white/40 font-medium uppercase tracking-wider mb-3">Toggle Plans</h3>
-        <div className="flex flex-wrap gap-3">
-          {mockForecasts.map(f => (
-            <button
-              key={f.planId}
-              onClick={() => togglePlan(f.planId)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-full text-[12px] font-medium border transition-all ${
-                enabledPlans.includes(f.planId)
-                  ? 'bg-white/[0.08] border-white/15 text-white'
-                  : 'bg-transparent border-white/[0.06] text-white/25'
-              }`}
-            >
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: f.color, opacity: enabledPlans.includes(f.planId) ? 1 : 0.3 }} />
-              {f.planName}
-            </button>
-          ))}
-        </div>
-      </GlassCard>
+          {/* Plan toggles */}
+          <GlassCard className="p-5">
+            <h3 className="text-[12px] text-white/40 font-medium uppercase tracking-wider mb-3">Toggle Plans</h3>
+            <div className="flex flex-wrap gap-3">
+              {forecasts.map((f: any) => (
+                <button
+                  key={f.planId}
+                  onClick={() => togglePlan(f.planId)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full text-[12px] font-medium border transition-all ${
+                    enabledPlans.includes(f.planId)
+                      ? 'bg-white/[0.08] border-white/15 text-white'
+                      : 'bg-transparent border-white/[0.06] text-white/25'
+                  }`}
+                >
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: f.color, opacity: enabledPlans.includes(f.planId) ? 1 : 0.3 }} />
+                  {f.planName}
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+        </>
+      )}
 
       {/* Simulator CTA */}
       <div className="mt-6 text-center">

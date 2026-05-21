@@ -7,22 +7,40 @@ import WarningBanner from '../../components/ui/WarningBanner'
 import RejectionRiskBadge from '../../components/ui/RejectionRiskBadge'
 import WatchlistButton from '../../components/ui/WatchlistButton'
 import GhostButton from '../../components/ui/GhostButton'
-import { mockPlans } from '../../data/mockPlans'
-import { mockRecommendations } from '../../data/mockRecommendations'
+import { usePlanDetail } from '../../hooks/usePlanDetail'
+import { useRecommendations } from '../../hooks/useRecommendations'
+import { useToggleWatchlist } from '../../hooks/useToggleWatchlist'
+import { useWatchlistStore } from '../../stores/watchlistStore'
 
 export default function PlanDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const plan = mockPlans.find(p => p.id === id)
-  const reco = mockRecommendations.find(r => r.id === id)
 
-  if (!plan) {
+  const { data: plan, isLoading: isPlanLoading, error: planError } = usePlanDetail(id)
+  const { data: recoData } = useRecommendations()
+  const toggleWatchlist = useToggleWatchlist()
+  const watchlistPlanIds = useWatchlistStore((state) => state.watchlistPlanIds)
+
+  const reco = recoData?.recommendations?.find((r: any) => r.id === id)
+  const isWatchlisted = plan ? watchlistPlanIds.includes(plan.id) : false
+
+  if (isPlanLoading) {
     return (
-      <div className="min-h-screen p-8 flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-white/80 animate-spin mb-4" />
+        <p className="text-[14px] text-white/40">Fetching Plan Details...</p>
+      </div>
+    )
+  }
+
+  if (planError || !plan) {
+    return (
+      <div className="min-h-screen p-8 flex items-center justify-center bg-black">
         <p className="text-white/40">Plan not found</p>
       </div>
     )
   }
+
 
   return (
     <div className="min-h-screen p-6 lg:p-8 max-w-4xl mx-auto">
@@ -41,7 +59,10 @@ export default function PlanDetail() {
           </div>
           <p className="text-[14px] text-white/40">{plan.insurer}</p>
         </div>
-        <WatchlistButton isWatchlisted={reco?.isWatchlisted} />
+        <WatchlistButton
+          isWatchlisted={isWatchlisted}
+          onToggle={() => toggleWatchlist.mutate(plan.id)}
+        />
       </div>
 
       <div className="space-y-5">

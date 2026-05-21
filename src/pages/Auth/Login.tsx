@@ -4,21 +4,28 @@ import { Shield } from 'lucide-react'
 import GlassCard from '../../components/ui/GlassCard'
 import InputField from '../../components/ui/InputField'
 import PrimaryButton from '../../components/ui/PrimaryButton'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // Simulate auth
-    setTimeout(() => {
-      sessionStorage.setItem('insuriq_auth', 'true')
+    setError('')
+    try {
+      await login(email, password)
       navigate('/dashboard')
-    }, 800)
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Login failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -35,6 +42,12 @@ export default function Login() {
         <GlassCard className="p-8">
           <h2 className="text-[18px] font-medium text-white mb-1">Welcome back</h2>
           <p className="text-[13px] text-white/40 mb-8">Sign in to your account</p>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-[13px] text-red-400">{error}</p>
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-5">
             <InputField

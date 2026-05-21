@@ -52,7 +52,7 @@ export default function ForecastChart() {
         backgroundColor: 'rgba(0,0,0,0.85)',
         borderColor: 'rgba(255,255,255,0.1)',
         borderWidth: 1,
-        titleFont: { family: 'Inter', size: 12, weight: '500' as const },
+        titleFont: { family: 'Inter', size: 12, weight: 500 },
         bodyFont: { family: 'Inter', size: 12 },
         padding: 12,
         cornerRadius: 10,

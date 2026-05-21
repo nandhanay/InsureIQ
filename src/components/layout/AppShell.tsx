@@ -5,6 +5,7 @@ import {
   Bookmark, Sparkles, LogOut, Menu, X,
 } from 'lucide-react'
 import CopilotDrawer from '../../pages/Copilot/CopilotDrawer'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -21,11 +22,12 @@ const navItems = [
 export default function AppShell({ children }: AppShellProps) {
   const navigate = useNavigate()
   const location = useLocation()
+  const { logout } = useAuth()
   const [copilotOpen, setCopilotOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('insuriq_auth')
+  const handleLogout = async () => {
+    await logout()
     navigate('/')
   }
 

@@ -1,0 +1,3 @@
+@echo off
+echo Starting InsureIQ Frontend...
+npm run dev

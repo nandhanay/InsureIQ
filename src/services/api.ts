@@ -146,7 +146,16 @@ export const profileAPI = {
     const response = await api.get('/api/profile/me')
     return response.data
   },
+  createProfile: async (data: Record<string, unknown>) => {
+    const response = await api.post('/api/profile/create', data)
+    return response.data
+  },
+  updateProfile: async (data: Record<string, unknown>) => {
+    const response = await api.put('/api/profile/update', data)
+    return response.data
+  },
 }
+
 
 // ═══════════════════════════════════════
 // Plans API
@@ -175,13 +184,48 @@ export const recommendationsAPI = {
 // ═══════════════════════════════════════
 // Documents API
 // ═══════════════════════════════════════
+export interface MedicalDocument {
+  id: number
+  user_id: number
+  filename: string
+  extracted_values: Record<string, { value: string; confidence: number; status: 'normal' | 'elevated' | 'high' | 'low' }>
+  confidence_score: number
+  created_at: string
+}
+
 export const documentsAPI = {
-  extractDocument: async (file: File) => {
+  extractDocument: async (file: File): Promise<MedicalDocument> => {
     const formData = new FormData()
     formData.append('file', file)
     const response = await api.post('/api/documents/extract', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 60000, // 60s timeout for Gemini processing
+    })
+    return response.data
+  },
+  listDocuments: async (): Promise<MedicalDocument[]> => {
+    const response = await api.get('/api/documents')
+    return response.data
+  },
+  uploadDocument: async (file: File): Promise<MedicalDocument> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/api/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    })
+    return response.data
+  },
+  deleteDocument: async (id: number): Promise<{ message: string }> => {
+    const response = await api.delete(`/api/documents/${id}`)
+    return response.data
+  },
+  replaceDocument: async (id: number, file: File): Promise<MedicalDocument> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.put(`/api/documents/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
     })
     return response.data
   },

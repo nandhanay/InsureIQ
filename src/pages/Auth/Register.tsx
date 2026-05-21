@@ -27,7 +27,7 @@ export default function Register() {
     setError('')
     try {
       await register(name, email, password)
-      navigate('/intake')
+      navigate('/profile-setup')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.')
     } finally {
@@ -86,7 +86,7 @@ export default function Register() {
           <div className="mt-6 text-center">
             <span className="text-[13px] text-white/30">
               Already have an account?{' '}
-              <Link to="/" className="text-white/70 hover:text-white transition-colors underline underline-offset-2">
+              <Link to="/login" className="text-white/70 hover:text-white transition-colors underline underline-offset-2">
                 Sign in
               </Link>
             </span>

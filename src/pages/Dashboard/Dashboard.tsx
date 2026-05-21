@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BarChart3, GitCompare, MessageCircle, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react'
+import { BarChart3, GitCompare, MessageCircle, TrendingUp, AlertCircle, RefreshCw, FileText } from 'lucide-react'
 import GlassCard from '../../components/ui/GlassCard'
 import PlanCard from '../../components/ui/PlanCard'
 import RiskMeter from '../../components/ui/RiskMeter'
@@ -11,9 +11,11 @@ import { useRecommendations } from '../../hooks/useRecommendations'
 import { useProfile } from '../../hooks/useProfile'
 import { useWatchlist } from '../../hooks/useWatchlist'
 import { useToggleWatchlist } from '../../hooks/useToggleWatchlist'
+import { useDocuments } from '../../hooks/useDocuments'
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { documents } = useDocuments()
   
   const { 
     data: recoData, 
@@ -62,6 +64,11 @@ export default function Dashboard() {
   const riskFactors = recoData?.riskFactors || []
   const userName = profileData?.name || 'User'
   const watchlistChanges = watchlistData?.changes || []
+
+  const docCount = documents?.length || 0
+  const latestDocDate = documents && documents.length > 0 && documents[0]?.created_at
+    ? new Date(documents[0].created_at).toLocaleDateString()
+    : 'Never'
 
   return (
     <div className="min-h-screen p-6 lg:p-8">
@@ -138,6 +145,33 @@ export default function Dashboard() {
               ) : (
                 <p className="text-[13px] text-white/30">No risk factors identified</p>
               )}
+            </div>
+          </GlassCard>
+
+          {/* Medical Documents Summary */}
+          <GlassCard className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[14px] font-medium text-white/60 flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Medical Documents
+              </h3>
+              <span className="text-[12px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/60">
+                {docCount} {docCount === 1 ? 'Report' : 'Reports'}
+              </span>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-white/40">Latest Update:</span>
+                <span className="text-white/80 font-medium">{latestDocDate}</span>
+              </div>
+              
+              <button
+                onClick={() => navigate('/profile')}
+                className="w-full py-2.5 rounded-[12px] bg-white/[0.08] text-white text-[13px] font-medium hover:bg-white/[0.12] transition-all flex items-center justify-center gap-2"
+              >
+                Manage Documents
+              </button>
             </div>
           </GlassCard>
 

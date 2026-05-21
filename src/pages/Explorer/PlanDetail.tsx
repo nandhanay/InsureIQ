@@ -94,7 +94,7 @@ export default function PlanDetail() {
         {/* Warnings */}
         {reco && reco.warnings.length > 0 && (
           <div className="space-y-2">
-            {reco.warnings.map((w, i) => (
+            {reco.warnings.map((w: any, i: number) => (
               <WarningBanner key={i} type={w.type} message={w.message} severity={w.severity} />
             ))}
           </div>
@@ -112,7 +112,7 @@ export default function PlanDetail() {
               <span className="text-[13px] text-white/40">Co-Pay</span>
               <span className="text-[13px] text-white/70">{plan.coPay}</span>
             </div>
-            {plan.features.map((f, i) => (
+            {plan.features.map((f: any, i: number) => (
               <div key={i} className="flex items-center gap-2 py-1.5">
                 <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                 <span className="text-[13px] text-white/60">{f}</span>
@@ -125,7 +125,7 @@ export default function PlanDetail() {
         <GlassCard className="p-6">
           <h3 className="text-[14px] font-medium text-white/60 mb-3">Day-1 Covered Conditions</h3>
           <div className="flex flex-wrap gap-2">
-            {plan.day1Conditions.map((c, i) => (
+            {plan.day1Conditions.map((c: any, i: number) => (
               <Badge key={i} variant="success">{c}</Badge>
             ))}
           </div>
@@ -135,7 +135,7 @@ export default function PlanDetail() {
         <GlassCard className="p-6">
           <h3 className="text-[14px] font-medium text-white/60 mb-3">Exclusions</h3>
           <div className="space-y-2">
-            {plan.exclusions.map((e, i) => (
+            {plan.exclusions.map((e: any, i: number) => (
               <div key={i} className="flex items-center gap-2">
                 <X className="w-3.5 h-3.5 text-red-400/60 flex-shrink-0" />
                 <span className="text-[13px] text-white/50">{e}</span>
@@ -149,7 +149,7 @@ export default function PlanDetail() {
           <GlassCard className="p-6">
             <h3 className="text-[14px] font-medium text-emerald-400/70 mb-3">Pros</h3>
             <div className="space-y-2">
-              {plan.pros.map((p, i) => (
+              {plan.pros.map((p: any, i: number) => (
                 <div key={i} className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                   <span className="text-[13px] text-white/60">{p}</span>
@@ -160,7 +160,7 @@ export default function PlanDetail() {
           <GlassCard className="p-6">
             <h3 className="text-[14px] font-medium text-red-400/70 mb-3">Cons</h3>
             <div className="space-y-2">
-              {plan.cons.map((c, i) => (
+              {plan.cons.map((c: any, i: number) => (
                 <div key={i} className="flex items-center gap-2">
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-400/60 flex-shrink-0" />
                   <span className="text-[13px] text-white/50">{c}</span>
@@ -175,7 +175,7 @@ export default function PlanDetail() {
           <GlassCard className="p-6">
             <h3 className="text-[14px] font-medium text-white/60 mb-3">Premium Forecast</h3>
             <div className="flex gap-4">
-              {reco.premiumForecast.map((f, i) => (
+              {reco.premiumForecast.map((f: any, i: number) => (
                 <div key={i} className="flex items-center gap-2 px-4 py-3 rounded-[10px] bg-white/[0.03]">
                   <TrendingUp className="w-3.5 h-3.5 text-white/30" />
                   <span className="text-[12px] text-white/50">Year {f.year}:</span>

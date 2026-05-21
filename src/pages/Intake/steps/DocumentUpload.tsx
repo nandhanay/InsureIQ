@@ -29,7 +29,7 @@ export default function DocumentUpload({ formData, updateField }: Props) {
       onSuccess: (data) => {
         setExtracting(false)
         setExtracted(true)
-        setExtractedData(data)
+        setExtractedData(data?.extracted_values || data)
         updateField('documentsUploaded', true)
       },
       onError: (err) => {

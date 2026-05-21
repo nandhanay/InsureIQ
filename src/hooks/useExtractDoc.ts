@@ -7,7 +7,10 @@ export function useExtractDoc() {
   return useMutation({
     mutationFn: (file: File) => documentsAPI.extractDocument(file),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.invalidateQueries({ queryKey: ['recommendations'] })
+      queryClient.invalidateQueries({ queryKey: ['forecasts'] })
     },
   })
 }

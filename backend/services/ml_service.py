@@ -32,14 +32,43 @@ def _build_feature_vector(profile: dict) -> dict:
 
     conditions = profile.get("chronic_conditions", [])
     family_hist = profile.get("family_history", [])
-
-    num_conditions = len(conditions)
-    num_family = len(family_hist)
+    extracted = profile.get("extracted_values", {})
 
     has_diabetes = 1 if any("diabet" in c.lower() for c in conditions) else 0
+    if not has_diabetes and extracted:
+        hba1c_status = extracted.get("hba1c", {}).get("status", "normal")
+        glucose_status = extracted.get("glucose", {}).get("status", "normal")
+        if hba1c_status in ("high", "elevated") or glucose_status == "high":
+            has_diabetes = 1
+
     has_hypertension = 1 if any("hypertension" in c.lower() or "blood pressure" in c.lower() for c in conditions) else 0
+    if not has_hypertension and extracted:
+        bp_status = extracted.get("bloodPressure", {}).get("status", "normal")
+        if bp_status == "high":
+            has_hypertension = 1
+
     has_cholesterol = 1 if any("cholesterol" in c.lower() for c in conditions) else 0
+    if not has_cholesterol and extracted:
+        chol_status = extracted.get("cholesterol", {}).get("status", "normal")
+        ldl_status = extracted.get("ldl", {}).get("status", "normal")
+        if chol_status in ("high", "elevated") or ldl_status in ("high", "elevated"):
+            has_cholesterol = 1
+
     has_heart = 1 if any("heart" in c.lower() or "cardiac" in c.lower() for c in conditions) else 0
+
+    # Count unique conditions combining manual and clinical report detections
+    detected_conditions = set(c.lower() for c in conditions)
+    if has_diabetes:
+        detected_conditions.add("diabetes")
+    if has_hypertension:
+        detected_conditions.add("hypertension")
+    if has_cholesterol:
+        detected_conditions.add("cholesterol")
+    if has_heart:
+        detected_conditions.add("heart")
+
+    num_conditions = len(detected_conditions)
+    num_family = len(family_hist)
 
     family_diabetes = 1 if any("diabet" in f.lower() for f in family_hist) else 0
     family_hypertension = 1 if any("hypertension" in f.lower() or "blood pressure" in f.lower() for f in family_hist) else 0

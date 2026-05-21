@@ -1,7 +1,8 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
+import HeroLanding from './pages/Landing/HeroLanding'
 import IntakeWizard from './pages/Intake/IntakeWizard'
 import Dashboard from './pages/Dashboard/Dashboard'
 import PlanList from './pages/Explorer/PlanList'
@@ -10,6 +11,8 @@ import CompareView from './pages/Compare/CompareView'
 import ForecastChart from './pages/Forecast/ForecastChart'
 import Simulator from './pages/Forecast/Simulator'
 import WatchlistDashboard from './pages/Watchlist/WatchlistDashboard'
+import ProfileSetup from './pages/Profile/ProfileSetup'
+import ProfilePage from './pages/Profile/ProfilePage'
 import AppShell from './components/layout/AppShell'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 
@@ -25,17 +28,24 @@ export default function App() {
   return (
     <Routes>
       {/* Public */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<HeroLanding />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       {/* Semi-protected (no shell) */}
       <Route path="/intake" element={
         <ProtectedRoute><IntakeWizard /></ProtectedRoute>
       } />
+      <Route path="/profile-setup" element={
+        <ProtectedRoute><ProfileSetup /></ProtectedRoute>
+      } />
 
       {/* Protected with shell */}
       <Route path="/dashboard" element={
         <ProtectedLayout><Dashboard /></ProtectedLayout>
+      } />
+      <Route path="/profile" element={
+        <ProtectedLayout><ProfilePage /></ProtectedLayout>
       } />
       <Route path="/plans" element={
         <ProtectedLayout><PlanList /></ProtectedLayout>
@@ -55,6 +65,10 @@ export default function App() {
       <Route path="/watchlist" element={
         <ProtectedLayout><WatchlistDashboard /></ProtectedLayout>
       } />
+
+      {/* App redirect fallback */}
+      <Route path="/app" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )
 }
+

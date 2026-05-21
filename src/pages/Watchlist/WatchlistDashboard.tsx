@@ -38,7 +38,7 @@ export default function WatchlistDashboard() {
         {/* Saved Plans */}
         <div className="flex-1 space-y-4">
           <h3 className="text-[13px] text-white/40 font-medium uppercase tracking-wider">Saved Plans</h3>
-          {plans.map(plan => (
+          {plans.map((plan: any) => (
             <GlassCard key={plan.id} className="p-5" interactive onClick={() => navigate(`/plans/${plan.id}`)}>
               <div className="flex items-start justify-between mb-3">
                 <div>

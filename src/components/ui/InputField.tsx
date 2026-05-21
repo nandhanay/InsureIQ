@@ -10,6 +10,9 @@ interface InputFieldProps {
   disabled?: boolean
   id?: string
   className?: string
+  min?: string | number
+  max?: string | number
+  required?: boolean
 }
 
 export default function InputField({
@@ -22,6 +25,9 @@ export default function InputField({
   disabled = false,
   id,
   className = '',
+  min,
+  max,
+  required,
 }: InputFieldProps) {
   const inputId = id || label.toLowerCase().replace(/\s+/g, '-')
 
@@ -40,6 +46,9 @@ export default function InputField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
+        min={min}
+        max={max}
+        required={required}
         className={`
           w-full px-4 py-3 rounded-[var(--radius-md)]
           bg-white/[0.06] border text-white text-[14px]

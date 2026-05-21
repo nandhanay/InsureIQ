@@ -21,6 +21,33 @@ async def lifespan(app: FastAPI):
     # Create database tables if they do not exist
     Base.metadata.create_all(bind=engine)
 
+    # Migrate columns if they don't exist
+    db = SessionLocal()
+    try:
+        from sqlalchemy import text
+        # Add columns if missing, transfer values from old columns, and set defaults
+        db.execute(text("ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS full_name VARCHAR(100);"))
+        
+        db.execute(text("ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS smoking_status BOOLEAN;"))
+        db.execute(text("UPDATE user_profiles SET smoking_status = smoking WHERE smoking_status IS NULL;"))
+        db.execute(text("ALTER TABLE user_profiles ALTER COLUMN smoking_status SET DEFAULT FALSE;"))
+        db.execute(text("UPDATE user_profiles SET smoking_status = FALSE WHERE smoking_status IS NULL;"))
+        db.execute(text("ALTER TABLE user_profiles ALTER COLUMN smoking_status SET NOT NULL;"))
+
+        db.execute(text("ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS alcohol_consumption BOOLEAN;"))
+        db.execute(text("UPDATE user_profiles SET alcohol_consumption = alcohol WHERE alcohol_consumption IS NULL;"))
+        db.execute(text("ALTER TABLE user_profiles ALTER COLUMN alcohol_consumption SET DEFAULT FALSE;"))
+        db.execute(text("UPDATE user_profiles SET alcohol_consumption = FALSE WHERE alcohol_consumption IS NULL;"))
+        db.execute(text("ALTER TABLE user_profiles ALTER COLUMN alcohol_consumption SET NOT NULL;"))
+        
+        db.commit()
+        print("✅ Database schema migrated for profile system")
+    except Exception as e:
+        print(f"⚠️ Migration error: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
     # Seed plans data
     db = SessionLocal()
     try:

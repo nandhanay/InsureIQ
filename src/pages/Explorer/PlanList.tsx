@@ -114,7 +114,7 @@ export default function PlanList() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filtered.map((plan) => (
+              {filtered.map((plan: any) => (
                 <GlassCard
                   key={plan.id}
                   className="p-5 cursor-pointer"

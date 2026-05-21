@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
   Shield, LayoutDashboard, Search, GitCompare, TrendingUp,
-  Bookmark, Sparkles, LogOut, Menu, X,
+  Bookmark, Sparkles, LogOut, Menu, X, User,
 } from 'lucide-react'
 import CopilotDrawer from '../../pages/Copilot/CopilotDrawer'
 import { useAuth } from '../../contexts/AuthContext'
@@ -17,6 +17,7 @@ const navItems = [
   { to: '/compare', icon: GitCompare, label: 'Compare' },
   { to: '/forecast', icon: TrendingUp, label: 'Forecast' },
   { to: '/watchlist', icon: Bookmark, label: 'Watchlist' },
+  { to: '/profile', icon: User, label: 'Profile' },
 ]
 
 export default function AppShell({ children }: AppShellProps) {

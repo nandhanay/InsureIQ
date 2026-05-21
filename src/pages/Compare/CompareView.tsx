@@ -47,7 +47,7 @@ export default function CompareView() {
       {/* Plan selector */}
       <div className="mb-6">
         <div className="flex flex-wrap gap-2">
-          {plans.map(p => (
+          {plans.map((p: any) => (
             <button
               key={p.id}
               onClick={() => togglePlan(p.id)}
